@@ -28,14 +28,14 @@ local function get_image_command(file)
     if image_file == nil then
         do return end
     end
-    Logger:info(string.format("Image %s.%s generated!", file, settings.image.format))
     return string.format("sh -c '%s & disown; echo $?'", settings.image.execute_to_open(image_file))
 end
 
 local function execute_command(command, error_msg)
     error_msg = error_msg or "Execution error!"
+        Logger:info("command: " .. command)
     local result = vim.fn.system(command)
-    if tonumber(result) ~= 0 then
+    if result == nil then
         vim.cmd("redraw")
         Logger:error(error_msg)
         do return end
@@ -59,16 +59,17 @@ function M.run()
         local format = settings.image.format
         local darkmode = settings.image.darkmode and "-darkmode" or ""
 
-        Logger:info("Building...")
-        if cli_puml ~= 0 then
-            local puml_command = string.format("plantuml %s -t%s %s", file_with_extension, format, darkmode)
+        if (puml_jar) then
+            Logger:info("Building via jar...")
+            local puml_command = string.format("java -jar %s %s -t%s %s; echo $?", puml_jar, file_with_extension, format,
+                darkmode)
             if settings.actions.redraw then
                 redraw()
             end
             execute_command(puml_command)
         else
-            local puml_command = string.format("java -jar %s %s -t%s %s; echo $?", puml_jar, file_with_extension, format,
-                darkmode)
+            Logger:info("Building via cli...")
+            local puml_command = string.format("plantuml %s -t%s %s", file_with_extension, format, darkmode)
             if settings.actions.redraw then
                 redraw()
             end

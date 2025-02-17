@@ -33,7 +33,6 @@ end
 
 local function execute_command(command, error_msg)
     error_msg = error_msg or "Execution error!"
-        Logger:info("command: " .. command)
     local result = vim.fn.system(command)
     if result == nil then
         vim.cmd("redraw")
@@ -60,7 +59,6 @@ function M.run()
         local darkmode = settings.image.darkmode and "-darkmode" or ""
 
         if (puml_jar) then
-            Logger:info("Building via jar...")
             local puml_command = string.format("java -jar %s %s -t%s %s; echo $?", puml_jar, file_with_extension, format,
                 darkmode)
             if settings.actions.redraw then
@@ -68,14 +66,13 @@ function M.run()
             end
             execute_command(puml_command)
         else
-            Logger:info("Building via cli...")
             local puml_command = string.format("plantuml %s -t%s %s", file_with_extension, format, darkmode)
             if settings.actions.redraw then
                 redraw()
             end
             execute_command(puml_command)
         end
-        execute_command(get_image_command(file), "Image not generated it.")
+        execute_command(get_image_command(file), "Image not generated.")
     else
         Logger:warn("Install plantuml or download it from the official page and set it up with 'puml_jar' option.")
     end
